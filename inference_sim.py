@@ -1,25 +1,14 @@
 # boiler plate imports
-import h5py
 import numpy as np
-import glob
 import torch
 from tqdm import tqdm
 # import sigpy as sp
 import matplotlib.pyplot as plt
 import os
-import sys
 import argparse
-import copy
-from dotmap import DotMap
-import tqdm
 from utils import nrmse
-from motion_ops import motion_adjoint
-from sampling_funcs import StackedRandomGenerator, motion_sampler, ODE_motion_sampler, ODE_motion_sampler_with_logs
-import re
-import click
-import tqdm
+from sampling_funcs import StackedRandomGenerator,ODE_motion_sampler
 import pickle
-import PIL.Image
 import dnnlib
 from torch_utils import distributed as dist
 # dist.init()
@@ -29,8 +18,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0)
 parser.add_argument('--img_l_ss', type=float, default=2)
 parser.add_argument('--mot_l_ss', type=float, default=1)
-parser.add_argument('--S_noise', type=float, default=1)
-parser.add_argument('--sigma_max', type=float, default=0.5)
+parser.add_argument('--S_noise', type=float, default=0)
+parser.add_argument('--sigma_max', type=float, default=5)
 parser.add_argument('--num_steps', type=int, default=300)
 parser.add_argument('--group_ETL', type=int, default=1)
 parser.add_argument('--R', type=int, default=4)
@@ -57,33 +46,24 @@ device=torch.device('cuda')
 
 
 # load sample 
-# data_file = './sim_inf_data/ACSRandom_R%d_ETL%d_TR%d/sample%d.pt'%(args.R, args.ETL, args.TR, args.sample)
-#data_file = './sim_inf_data/linearRandom_R%d_ETL%d_TR%d/sample%d.pt'%(args.R, args.ETL, args.TR, args.sample)
-# data_file = './sim_inf_data/R%d_ETL%d_TR%d/sample%d.pt'%(args.R, args.ETL, args.TR, args.sample)
-#data_file = '/csiNAS2/slow/brett/diff_mo_co_8_31_23/sim_inf_data/linearAccel_R%d_ETL%d_TR%d/sample%d.pt'%(args.R,args.ETL,args.TR,args.sample)
 data_file = '/csiNAS2/slow/brett/diff_mo_co_9_2_23_noisy/sim_inf_data/%s_R%d_ETL%d_TR%d/sample%d.pt'%(args.pat,args.R,args.ETL,args.TR,args.sample)
 
 contents = torch.load(data_file)
-# print(contents.keys())
+
 
 s_maps        = contents['maps'].cuda() # shape: [1,C,H,W]
 ksp           = contents['ksp'].cuda()# shape: [1,C,H,W]
 traj          = contents['traj'].cuda()# shape: [1,C,H,W]
 
-# print(ksp.shape)
-# print()
+
 if not args.group_ETL:
     N_RO = traj.shape[1]//args.ETL
     print('Not assuming ETL groupings')
     ktraj_reshaped = traj.reshape(traj.shape[0],N_RO,args.ETL,2)
-    # print(ktraj_reshaped.shape)
     ktraj_reshaped = ktraj_reshaped.permute(0,2,1,-1)
-    # print(ktraj_reshaped.shape)
     traj = ktraj_reshaped.reshape(-1,N_RO,2)
-
-    # print(ksp.shape)
     ksp = ksp.reshape(ksp.shape[0],ksp.shape[1], 1, ksp.shape[2]*args.ETL, N_RO)
-    # print(ksp.shape)
+
 
 
 
@@ -92,11 +72,7 @@ gt_theta      = contents['gt_theta'].cuda() # shape [TR]
 gt_dx         = contents['gt_dx'].cuda() # shape [TR]
 gt_dy         = contents['gt_dy'].cuda() # shape [TR]
 norm_c        = contents['norm'].cuda() # scalar
-#norm_c = torch.max(abs(gt_img))
-#print('norm: ', norm_c)
 
-# print(s_maps.shape)
-# print(ksp.shape)
 # normalize
 ksp = ksp/norm_c
 gt_img = gt_img/norm_c
