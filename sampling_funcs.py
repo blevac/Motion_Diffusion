@@ -62,22 +62,9 @@ def ODE_motion_sampler(net, y, maps, traj, latents, img_l_ss=1.0, motion_l_ss=1.
 
 
     # initialize motion estimates
-    if motion_est:
-        est_theta = torch.zeros_like(gt_theta)
-        est_dx    = torch.zeros_like(gt_dx)
-        est_dy    = torch.zeros_like(gt_dy)
-        if not group_ETL:
-            est_theta = torch.zeros(traj.shape[0]).cuda()
-            est_dx    = torch.zeros(traj.shape[0]).cuda()
-            est_dy    = torch.zeros(traj.shape[0]).cuda()
-            
-    else:
-        # est_theta = gt_theta.clone()
-        # est_dx    = gt_dx.clone()
-        # est_dy    = gt_dy.clone()
-        est_theta = torch.zeros_like(gt_theta)
-        est_dx    = torch.zeros_like(gt_dx)
-        est_dy    = torch.zeros_like(gt_dy)
+    est_theta = torch.zeros_like(gt_theta)
+    est_dx    = torch.zeros_like(gt_dx)
+    est_dy    = torch.zeros_like(gt_dy)
     
 
     # Main sampling loop.
