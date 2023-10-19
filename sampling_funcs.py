@@ -120,11 +120,6 @@ def ODE_motion_sampler(net, y, maps, traj, latents, img_l_ss=1.0, motion_l_ss=1.
         # est_dy = est_dy.requires_grad_(False)
 
 
-        # if verbose:
-        #     cplx_recon = torch.view_as_complex(x_next.permute(0,-2,-1,1).contiguous())[None]
-        #     print('Step:%d , NRMSE: %.3f'%(i, nrmse(gt_img, cplx_recon).item()))
-        #     if i%10==0:
-        #         img_stack.append(cplx_recon.cpu().numpy())
         with torch.no_grad():
             if verbose:
                 cplx_recon = torch.view_as_complex(x_next.permute(0,-2,-1,1).contiguous())[None]
