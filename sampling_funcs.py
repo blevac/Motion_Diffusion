@@ -62,9 +62,14 @@ def ODE_motion_sampler(net, y, maps, traj, latents, img_l_ss=1.0, motion_l_ss=1.
 
 
     # initialize motion estimates
-    est_theta = torch.zeros_like(gt_theta)
-    est_dx    = torch.zeros_like(gt_dx)
-    est_dy    = torch.zeros_like(gt_dy)
+    if group_ETL:
+        est_theta = torch.zeros_like(gt_theta)
+        est_dx    = torch.zeros_like(gt_dx)
+        est_dy    = torch.zeros_like(gt_dy)
+    else:
+        est_theta = torch.zeros(traj.shape[0]).cuda()
+        est_dx    = torch.zeros(traj.shape[0]).cuda()
+        est_dy    = torch.zeros(traj.shape[0]).cuda()
     
 
     # Main sampling loop.
@@ -122,11 +127,15 @@ def ODE_motion_sampler(net, y, maps, traj, latents, img_l_ss=1.0, motion_l_ss=1.
 
         with torch.no_grad():
             if verbose:
-                cplx_recon = torch.view_as_complex(x_next.permute(0,-2,-1,1).contiguous())[None]
-                img_nrmse =  nrmse(abs(gt_img), abs(cplx_recon)).item()
-                theta_nrmse =  nrmse(gt_theta, est_theta).item()
-                dx_nrmse =  nrmse(gt_dx, est_dx).item()
-                dy_nrmse =  nrmse(gt_dy, est_dy).item()
-                print('Step:%d , img NRMSE: %.3f, theta NRMSE: %.3f, dx NRMSE: %.3f, dy NRMSE: %.3f'%(i, img_nrmse, theta_nrmse, dx_nrmse, dy_nrmse))
-
+                if group_ETL:
+                    cplx_recon = torch.view_as_complex(x_next.permute(0,-2,-1,1).contiguous())[None]
+                    img_nrmse =  nrmse(abs(gt_img), abs(cplx_recon)).item()
+                    theta_nrmse =  nrmse(gt_theta, est_theta).item()
+                    dx_nrmse =  nrmse(gt_dx, est_dx).item()
+                    dy_nrmse =  nrmse(gt_dy, est_dy).item()
+                    print('Step:%d , img NRMSE: %.3f, theta NRMSE: %.3f, dx NRMSE: %.3f, dy NRMSE: %.3f'%(i, img_nrmse, theta_nrmse, dx_nrmse, dy_nrmse))
+                else:
+                    cplx_recon = torch.view_as_complex(x_next.permute(0,-2,-1,1).contiguous())[None]
+                    img_nrmse =  nrmse(abs(gt_img), abs(cplx_recon)).item()
+                    print('Step:%d , img NRMSE: %.3f'%(i, img_nrmse))
     return x_next, est_theta, est_dx, est_dy

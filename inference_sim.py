@@ -22,7 +22,7 @@ parser.add_argument('--S_noise', type=float, default=0)
 parser.add_argument('--sigma_max', type=float, default=5)
 parser.add_argument('--num_steps', type=int, default=300)
 parser.add_argument('--group_ETL', type=int, default=1)
-parser.add_argument('--R', type=int, default=4)
+parser.add_argument('--R', type=int, default=3)
 parser.add_argument('--ETL', type=int, default=16)
 parser.add_argument('--TR', type=int, default=24)
 parser.add_argument('--pat', type=str, default='cart')
@@ -46,8 +46,8 @@ device=torch.device('cuda')
 
 
 # load sample 
-data_file = '/csiNAS2/slow/brett/diff_mo_co_9_2_23_noisy/sim_inf_data/%s_R%d_ETL%d_TR%d/sample%d.pt'%(args.pat,args.R,args.ETL,args.TR,args.sample)
-
+# data_file = '/csiNAS2/slow/brett/diff_mo_co_9_2_23_noisy/sim_inf_data/%s_R%d_ETL%d_TR%d/sample%d.pt'%(args.pat,args.R,args.ETL,args.TR,args.sample)
+data_file = '/csiNAS2/slow/brett/newest_diff_mo_co_12_7_23_val/sim_val_data/%s_R%d_ETL%d_TR%d/sample1.pt'%(args.pat,args.R,args.ETL,args.TR)
 contents = torch.load(data_file)
 
 
@@ -79,7 +79,7 @@ gt_img = gt_img/norm_c
 
 batch_size = 1
 
-results_dir = './results_sim_9_13_23/%s_motionEst%d_R%d_ETL%d_TR%d_groupETL%d/net-%s_step-%d_imglss-%.1e_mot_lss-%.1e_sigmaMax-%.1e/sample%d/seed%d/'%(args.pat, args.motion_est, args.R, args.ETL, args.TR, args.group_ETL, args.net_arch, args.num_steps,  args.img_l_ss, args.mot_l_ss, args.sigma_max, args.sample, args.seed)
+results_dir = './results_sim_12_7_23/%s_motionEst%d_R%d_ETL%d_TR%d_groupETL%d/net-%s_step-%d_imglss-%.1e_mot_lss-%.1e_sigmaMax-%.1e/sample%d/seed%d/'%(args.pat, args.motion_est, args.R, args.ETL, args.TR, args.group_ETL, args.net_arch, args.num_steps,  args.img_l_ss, args.mot_l_ss, args.sigma_max, args.sample, args.seed)
 
 if not os.path.exists(results_dir):
     os.makedirs(results_dir)
